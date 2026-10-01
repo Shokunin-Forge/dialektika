@@ -1,10 +1,22 @@
-import type { ArenaTurn, DebateConfig, Side } from '@/lib/types';
+import type { ArenaTurn, DebateConfig, Side, Verdict } from '@/lib/types';
+import { JevPanel, JevPending } from './JevPanel';
 import { TurnCard } from './TurnCard';
 
-export function Arena({ config, turns }: { config: DebateConfig; turns: ArenaTurn[] }) {
+export function Arena({
+  config,
+  turns,
+  verdict,
+}: {
+  config: DebateConfig;
+  turns: ArenaTurn[];
+  verdict: Verdict | null;
+}) {
   const rounds = Array.from({ length: config.rounds }, (_, index) => index + 1);
   const findTurn = (round: number, side: Side) =>
     turns.find((turn) => turn.round === round && turn.side === side) ?? null;
+
+  const allDone =
+    turns.length === config.rounds * 2 && turns.every((turn) => turn.status === 'done');
 
   return (
     <div className="arena">
@@ -36,6 +48,14 @@ export function Arena({ config, turns }: { config: DebateConfig; turns: ArenaTur
           </section>
         );
       })}
+
+      {config.jevEnabled ? (
+        verdict ? (
+          <JevPanel verdict={verdict} />
+        ) : allDone ? (
+          <JevPending />
+        ) : null
+      ) : null}
     </div>
   );
 }

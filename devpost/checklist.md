@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Open http://localhost:3000 (set `OPENROUTER_API_KEY` first), enter a topic and two model ids (e.g. a Claude and a GPT model), press Start, and watch the defender open and the opposer rebut it live in the two columns. Does the back-and-forth read as a real debate?
   Commit: `Add live two-model debate arena`
 
-- [ ] **2. Pick models by name from a searchable list**
+- [x] **2. Pick models by name from a searchable list**
   Becomes usable: Instead of typing model ids, you pick both models by name from searchable dropdowns of OpenRouter's list, and if the list can't be fetched you can still type an id by hand.
   Why now: The kernel is already proven with manual ids, so the model-list fetch — the one external call with unverified response fields — now sits on a working app and can fail safely into the manual fallback.
   PRD ref: `prd.md > Features and Behavior > Setup and model selection`
@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Open the setup screen, search and pick both models by name, and confirm the names display and the selection sticks.
   Commit: `Add searchable OpenRouter model pickers`
 
-- [ ] **3. Jev weighs the debate**
+- [x] **3. Jev weighs the debate**
   Becomes usable: With Jev toggled on, a finished debate ends with a verdict panel — per-axis scores for both sides, the stronger side, the cited decisive turns, and the crystallization.
   Why now: The debate loop works and is flexible, so the judge can now consume a full, real debate; the structured-output API is the next unfamiliar surface to pin down and test.
   PRD ref: `prd.md > Features and Behavior > Jev's adjudication`
@@ -93,3 +93,5 @@ Activity mode:
 ## Revisions
 
 - Split the debate system prompt out of `messages` into the AI SDK's `instructions` option, and surfaced model failures from `fullStream` — the build discovered that AI SDK v7 rejects a `system` message inside `messages`, and that consuming `textStream` silently swallows provider errors, so a failed turn looked like a successful empty turn.
+- Added a dedicated, environment-overridable judge model (`JUDGE_MODEL`, default `openai/gpt-4o-mini`) — the plan's setup defines only the two debater pickers, so Jev had no third model to call.
+- Jev's structured output uses AI SDK v7's `generateText` with `Output.object({ schema })` (Zod), confirming the spec's open question about the `generateObject`/`output` naming.

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Arena } from '@/components/Arena';
 import { parseEvent, type StreamEvent } from '@/lib/stream-protocol';
-import type { ArenaTurn, DebateConfig, Side } from '@/lib/types';
+import type { ArenaTurn, DebateConfig, Side, Verdict } from '@/lib/types';
 
 export default function DebatePage() {
   const params = useParams<{ id: string }>();
@@ -14,6 +14,7 @@ export default function DebatePage() {
   const [config, setConfig] = useState<DebateConfig | null>(null);
   const [turns, setTurns] = useState<ArenaTurn[]>([]);
   const [fatal, setFatal] = useState<string | null>(null);
+  const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [finished, setFinished] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,7 +31,7 @@ export default function DebatePage() {
           setFinished(true);
           break;
         case 'verdict':
-          // Jev's verdict panel arrives in a later slice.
+          setVerdict(event.verdict);
           break;
         case 'error': {
           const { side, round, message } = event;
@@ -138,7 +139,7 @@ export default function DebatePage() {
           ? `${config.sides.defender} (defender) vs ${config.sides.opposer} (opposer) · ${config.rounds} rounds${finished ? ' · complete' : ''}`
           : 'Loading…'}
       </p>
-      {config ? <Arena config={config} turns={turns} /> : null}
+      {config ? <Arena config={config} turns={turns} verdict={verdict} /> : null}
       <div ref={bottomRef} />
     </main>
   );

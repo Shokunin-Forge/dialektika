@@ -1,9 +1,12 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { streamText } from 'ai';
+import { generateText, Output, streamText } from 'ai';
+import { JUDGE_INSTRUCTIONS, judgementSchema, type Judgement } from './judge';
 import type { ChatMessage } from './types';
 
 export const MISSING_KEY_MESSAGE =
   'OPENROUTER_API_KEY is not set. Add it to .env.local and restart the dev server.';
+
+export const JUDGE_MODEL = process.env.JUDGE_MODEL ?? 'openai/gpt-4o-mini';
 
 export function hasApiKey(): boolean {
   return Boolean(process.env.OPENROUTER_API_KEY);
@@ -37,6 +40,16 @@ export function streamTurnText(
     messages,
   });
   return textDeltas(result.fullStream as unknown as AsyncIterable<StreamPart>);
+}
+
+export async function judgeDebate(prompt: string): Promise<Judgement> {
+  const { output } = await generateText({
+    model: openrouter().chat(JUDGE_MODEL),
+    instructions: JUDGE_INSTRUCTIONS,
+    output: Output.object({ schema: judgementSchema }),
+    prompt,
+  });
+  return output;
 }
 
 async function* textDeltas(

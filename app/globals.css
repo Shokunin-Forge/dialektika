@@ -351,6 +351,103 @@ a {
   font-size: 13px;
 }
 
+/* Jev panel */
+.jev {
+  margin-top: 8px;
+  padding: 20px 22px;
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  border-top-width: 3px;
+  border-radius: var(--radius);
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.jev-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.jev-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--jev);
+  color: #140f24;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jev-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+.jev-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.jev-scores {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.jev-scores th,
+.jev-scores td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 14px;
+}
+
+.jev-scores thead th {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.jev-turns {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.jev-crystallization {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.jev-pending {
+  padding: 16px 18px;
+  border: 1px dashed rgba(167, 139, 250, 0.5);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.checkbox-field label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.checkbox-field input {
+  width: auto;
+}
+
 @media (max-width: 780px) {
   .grid-2,
   .arena-headers,

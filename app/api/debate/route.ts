@@ -1,5 +1,6 @@
 import { runDebate } from '@/lib/debate-runner';
-import { hasApiKey, MISSING_KEY_MESSAGE } from '@/lib/openrouter';
+import { buildJudgePrompt, toVerdict } from '@/lib/judge';
+import { hasApiKey, judgeDebate, MISSING_KEY_MESSAGE } from '@/lib/openrouter';
 import { serializeEvent } from '@/lib/stream-protocol';
 import type { StreamEvent } from '@/lib/stream-protocol';
 import type { DebateConfig } from '@/lib/types';
@@ -32,8 +33,19 @@ export async function POST(request: Request) {
       const emit = (event: StreamEvent) => {
         controller.enqueue(encoder.encode(serializeEvent(event)));
       };
+
       try {
-        await runDebate(config, emit);
+        const turns = await runDebate(config, emit);
+
+        if (config.jevEnabled) {
+          try {
+            const judgement = await judgeDebate(buildJudgePrompt(config, turns));
+            emit({ type: 'verdict', verdict: toVerdict(judgement) });
+          } catch (error) {
+            emit({ type: 'error', message: messageOf(error) });
+          }
+        }
+
         emit({ type: 'done' });
       } catch {
         // The runner already emitted a tagged error event for the failed turn.
@@ -49,6 +61,10 @@ export async function POST(request: Request) {
       'Cache-Control': 'no-store',
     },
   });
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function isValidConfig(config: DebateConfig): boolean {

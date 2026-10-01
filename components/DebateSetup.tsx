@@ -15,6 +15,7 @@ export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupPro
   const [defender, setDefender] = useState('');
   const [opposer, setOpposer] = useState('');
   const [rounds, setRounds] = useState(3);
+  const [jevEnabled, setJevEnabled] = useState(true);
 
   const ready =
     topic.trim().length > 0 && defender.trim().length > 0 && opposer.trim().length > 0;
@@ -30,7 +31,7 @@ export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupPro
         onStart({
           topic: topic.trim(),
           rounds,
-          jevEnabled: false,
+          jevEnabled,
           sides: { defender: defender.trim(), opposer: opposer.trim() },
         });
       }}
@@ -80,6 +81,17 @@ export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupPro
             value={rounds}
             onChange={(event) => setRounds(Math.max(1, Number(event.target.value) || 1))}
           />
+        </div>
+        <div className="field checkbox-field">
+          <label htmlFor="jev">
+            <input
+              id="jev"
+              type="checkbox"
+              checked={jevEnabled}
+              onChange={(event) => setJevEnabled(event.target.checked)}
+            />
+            <span>Jev judges the debate</span>
+          </label>
         </div>
         <button className="btn" type="submit" disabled={!ready}>
           Start debate
