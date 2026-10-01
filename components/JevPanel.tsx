@@ -7,6 +7,23 @@ const AXES: { key: keyof AxisScores; label: string }[] = [
 ];
 
 export function JevPanel({ verdict }: { verdict: Verdict }) {
+  if (verdict.plainText || !verdict.scores) {
+    return (
+      <section className="jev">
+        <header className="jev-head">
+          <span className="jev-badge">Jev</span>
+          <h2 className="jev-title">Plain-text verdict</h2>
+          <p className="jev-note">
+            Jev couldn’t return a scored verdict, so here is its take without scores.
+          </p>
+        </header>
+        <p className="jev-crystallization">{verdict.crystallization}</p>
+      </section>
+    );
+  }
+
+  const scores = verdict.scores;
+
   return (
     <section className="jev">
       <header className="jev-head">
@@ -37,8 +54,8 @@ export function JevPanel({ verdict }: { verdict: Verdict }) {
           {AXES.map((axis) => (
             <tr key={axis.key}>
               <th scope="row">{axis.label}</th>
-              <td>{verdict.scores.defender[axis.key]}</td>
-              <td>{verdict.scores.opposer[axis.key]}</td>
+              <td>{scores.defender[axis.key]}</td>
+              <td>{scores.opposer[axis.key]}</td>
             </tr>
           ))}
         </tbody>

@@ -63,6 +63,18 @@ export function toVerdict(judgement: Judgement): Verdict {
     decisiveTurns: judgement.decisiveTurns,
     crystallization: judgement.crystallization,
     tieBreakApplied: level,
+    plainText: false,
+  };
+}
+
+export function plainTextVerdict(crystallization: string): Verdict {
+  return {
+    scores: null,
+    strongerSide: null,
+    decisiveTurns: [],
+    crystallization,
+    tieBreakApplied: false,
+    plainText: true,
   };
 }
 

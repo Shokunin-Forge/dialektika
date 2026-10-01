@@ -10,6 +10,7 @@ export default function SetupPage() {
   const router = useRouter();
   const [models, setModels] = useState<ModelOption[]>([]);
   const [modelListFailed, setModelListFailed] = useState(false);
+  const [keyConfigured, setKeyConfigured] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +23,15 @@ export default function SetupPage() {
 
       try {
         const response = await fetch('/api/models', { cache: 'no-store' });
-        const data = (await response.json()) as { models?: ModelOption[] };
+        const data = (await response.json()) as {
+          models?: ModelOption[];
+          keyConfigured?: boolean;
+        };
+
+        if (typeof data.keyConfigured === 'boolean' && !cancelled) {
+          setKeyConfigured(data.keyConfigured);
+        }
+
         if (response.ok && Array.isArray(data.models) && data.models.length > 0) {
           saveModelsCache(data.models);
           if (!cancelled) {
@@ -61,7 +70,12 @@ export default function SetupPage() {
         Put a claim to the test: pick two models, assign the sides, and let them debate round by
         round.
       </p>
-      <DebateSetup models={models} modelListFailed={modelListFailed} onStart={handleStart} />
+      <DebateSetup
+        models={models}
+        modelListFailed={modelListFailed}
+        keyConfigured={keyConfigured}
+        onStart={handleStart}
+      />
     </main>
   );
 }

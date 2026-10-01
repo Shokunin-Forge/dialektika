@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Arena } from '@/components/Arena';
 import { parseEvent, type StreamEvent } from '@/lib/stream-protocol';
-import type { ArenaTurn, DebateConfig, Side, Verdict } from '@/lib/types';
+import type { ArenaTurn, DebateConfig, Side, Turn, Verdict } from '@/lib/types';
 
 export default function DebatePage() {
   const params = useParams<{ id: string }>();
@@ -13,9 +13,11 @@ export default function DebatePage() {
 
   const [config, setConfig] = useState<DebateConfig | null>(null);
   const [turns, setTurns] = useState<ArenaTurn[]>([]);
-  const [fatal, setFatal] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const priorTurnsRef = useRef<Turn[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function DebatePage() {
         const response = await fetch('/api/debate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(parsed),
+          body: JSON.stringify({ ...parsed, priorTurns: priorTurnsRef.current }),
           signal: controller.signal,
         });
 
@@ -112,11 +114,28 @@ export default function DebatePage() {
     void run();
 
     return () => controller.abort();
-  }, [id]);
+  }, [id, attempt]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [turns]);
+
+  function retry() {
+    priorTurnsRef.current = turns
+      .filter((turn) => turn.status === 'done')
+      .map((turn) => ({
+        index: turn.index,
+        round: turn.round,
+        side: turn.side,
+        modelId: turn.modelId,
+        text: turn.text,
+      }));
+    setTurns((previous) => previous.filter((turn) => turn.status !== 'error'));
+    setVerdict(null);
+    setFinished(false);
+    setFatal(null);
+    setAttempt((value) => value + 1);
+  }
 
   if (fatal) {
     return (
@@ -139,7 +158,9 @@ export default function DebatePage() {
           ? `${config.sides.defender} (defender) vs ${config.sides.opposer} (opposer) · ${config.rounds} rounds${finished ? ' · complete' : ''}`
           : 'Loading…'}
       </p>
-      {config ? <Arena config={config} turns={turns} verdict={verdict} /> : null}
+      {config ? (
+        <Arena config={config} turns={turns} verdict={verdict} onRetry={retry} />
+      ) : null}
       <div ref={bottomRef} />
     </main>
   );

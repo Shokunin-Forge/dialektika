@@ -39,11 +39,12 @@ export interface Verdict {
   scores: {
     defender: AxisScores;
     opposer: AxisScores;
-  };
-  strongerSide: Side;
+  } | null;
+  strongerSide: Side | null;
   decisiveTurns: number[];
   crystallization: string;
   tieBreakApplied: boolean;
+  plainText: boolean;
 }
 
 export interface Debate {

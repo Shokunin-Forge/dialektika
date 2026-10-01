@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Toggle Jev on, run a short debate, and read the verdict panel. Do the scores, the named stronger side, the cited turns, and the crystallization give you a defensible call plus insight?
   Commit: `Add Jev adjudication and verdict panel`
 
-- [ ] **4. Failures surface instead of hanging**
+- [x] **4. Failures surface instead of hanging**
   Becomes usable: A missing or invalid API key is reported clearly, and a model call that fails mid-debate shows an inline error on that turn with a Retry that resumes the run.
   Why now: Live model calls, rate limits, and network hiccups are the realistic failure surface, and the arena is now worth protecting from silent stalls before history and export build on top of it.
   PRD ref: `prd.md > States and Boundaries` (error cases), `prd.md > Product Decisions`

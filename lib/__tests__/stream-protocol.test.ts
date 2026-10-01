@@ -11,6 +11,7 @@ const verdict: Verdict = {
   decisiveTurns: [1, 3],
   crystallization: 'The opposition shifted the burden and never lost it.',
   tieBreakApplied: false,
+  plainText: false,
 };
 
 const events: StreamEvent[] = [

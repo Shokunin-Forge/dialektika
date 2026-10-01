@@ -1,7 +1,12 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { generateText, Output, streamText } from 'ai';
-import { JUDGE_INSTRUCTIONS, judgementSchema, type Judgement } from './judge';
-import type { ChatMessage } from './types';
+import {
+  JUDGE_INSTRUCTIONS,
+  judgementSchema,
+  plainTextVerdict,
+  toVerdict,
+} from './judge';
+import type { ChatMessage, Verdict } from './types';
 
 export const MISSING_KEY_MESSAGE =
   'OPENROUTER_API_KEY is not set. Add it to .env.local and restart the dev server.';
@@ -42,14 +47,33 @@ export function streamTurnText(
   return textDeltas(result.fullStream as unknown as AsyncIterable<StreamPart>);
 }
 
-export async function judgeDebate(prompt: string): Promise<Judgement> {
-  const { output } = await generateText({
-    model: openrouter().chat(JUDGE_MODEL),
-    instructions: JUDGE_INSTRUCTIONS,
-    output: Output.object({ schema: judgementSchema }),
-    prompt,
-  });
-  return output;
+export async function judgeDebate(prompt: string): Promise<Verdict> {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const { output } = await generateText({
+        model: openrouter().chat(JUDGE_MODEL),
+        instructions: JUDGE_INSTRUCTIONS,
+        output: Output.object({ schema: judgementSchema }),
+        prompt,
+      });
+      return toVerdict(output);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  try {
+    const { text } = await generateText({
+      model: openrouter().chat(JUDGE_MODEL),
+      instructions: JUDGE_INSTRUCTIONS,
+      prompt,
+    });
+    return plainTextVerdict(text);
+  } catch {
+    return plainTextVerdict(`Jev could not score this debate: ${toError(lastError).message}`);
+  }
 }
 
 async function* textDeltas(

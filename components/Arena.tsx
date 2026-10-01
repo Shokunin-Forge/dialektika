@@ -6,10 +6,12 @@ export function Arena({
   config,
   turns,
   verdict,
+  onRetry,
 }: {
   config: DebateConfig;
   turns: ArenaTurn[];
   verdict: Verdict | null;
+  onRetry?: () => void;
 }) {
   const rounds = Array.from({ length: config.rounds }, (_, index) => index + 1);
   const findTurn = (round: number, side: Side) =>
@@ -39,10 +41,18 @@ export function Arena({
             <div className="arena-round-label">Round {round}</div>
             <div className="arena-grid">
               <div className="arena-col">
-                {defender ? <TurnCard turn={defender} /> : <EmptyTurn side="defender" />}
+                {defender ? (
+                  <TurnCard turn={defender} onRetry={onRetry} />
+                ) : (
+                  <EmptyTurn side="defender" />
+                )}
               </div>
               <div className="arena-col">
-                {opposer ? <TurnCard turn={opposer} /> : <EmptyTurn side="opposer" />}
+                {opposer ? (
+                  <TurnCard turn={opposer} onRetry={onRetry} />
+                ) : (
+                  <EmptyTurn side="opposer" />
+                )}
               </div>
             </div>
           </section>

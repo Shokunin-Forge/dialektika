@@ -1,9 +1,9 @@
 import { runDebate } from '@/lib/debate-runner';
-import { buildJudgePrompt, toVerdict } from '@/lib/judge';
+import { buildJudgePrompt } from '@/lib/judge';
 import { hasApiKey, judgeDebate, MISSING_KEY_MESSAGE } from '@/lib/openrouter';
 import { serializeEvent } from '@/lib/stream-protocol';
 import type { StreamEvent } from '@/lib/stream-protocol';
-import type { DebateConfig } from '@/lib/types';
+import type { DebateConfig, Side, Turn } from '@/lib/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,19 +13,21 @@ export async function POST(request: Request) {
     return Response.json({ error: MISSING_KEY_MESSAGE }, { status: 400 });
   }
 
-  let config: DebateConfig;
+  let body: DebateConfig & { priorTurns?: unknown };
   try {
-    config = (await request.json()) as DebateConfig;
+    body = (await request.json()) as DebateConfig & { priorTurns?: unknown };
   } catch {
     return Response.json({ error: 'The debate request was not valid JSON.' }, { status: 400 });
   }
 
-  if (!isValidConfig(config)) {
+  if (!isValidConfig(body)) {
     return Response.json(
       { error: 'A topic, both models, and at least one round are required.' },
       { status: 400 },
     );
   }
+
+  const priorTurns = sanitizeTurns(body.priorTurns);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -35,15 +37,10 @@ export async function POST(request: Request) {
       };
 
       try {
-        const turns = await runDebate(config, emit);
+        const turns = await runDebate(body, emit, undefined, priorTurns);
 
-        if (config.jevEnabled) {
-          try {
-            const judgement = await judgeDebate(buildJudgePrompt(config, turns));
-            emit({ type: 'verdict', verdict: toVerdict(judgement) });
-          } catch (error) {
-            emit({ type: 'error', message: messageOf(error) });
-          }
+        if (body.jevEnabled) {
+          emit({ type: 'verdict', verdict: await judgeDebate(buildJudgePrompt(body, turns)) });
         }
 
         emit({ type: 'done' });
@@ -63,8 +60,28 @@ export async function POST(request: Request) {
   });
 }
 
-function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+function sanitizeTurns(value: unknown): Turn[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const turns: Turn[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+    const { round, side, modelId, text } = entry as Record<string, unknown>;
+    const validSide: Side | null = side === 'defender' || side === 'opposer' ? side : null;
+    if (
+      validSide &&
+      typeof round === 'number' &&
+      typeof modelId === 'string' &&
+      typeof text === 'string'
+    ) {
+      turns.push({ index: turns.length, round, side: validSide, modelId, text });
+    }
+  }
+  return turns;
 }
 
 function isValidConfig(config: DebateConfig): boolean {

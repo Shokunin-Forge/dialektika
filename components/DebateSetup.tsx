@@ -7,10 +7,11 @@ import { ModelPicker } from './ModelPicker';
 interface DebateSetupProps {
   models: ModelOption[];
   modelListFailed: boolean;
+  keyConfigured: boolean;
   onStart: (config: Omit<DebateConfig, 'id'>) => void;
 }
 
-export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupProps) {
+export function DebateSetup({ models, modelListFailed, keyConfigured, onStart }: DebateSetupProps) {
   const [topic, setTopic] = useState('');
   const [defender, setDefender] = useState('');
   const [opposer, setOpposer] = useState('');
@@ -18,7 +19,10 @@ export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupPro
   const [jevEnabled, setJevEnabled] = useState(true);
 
   const ready =
-    topic.trim().length > 0 && defender.trim().length > 0 && opposer.trim().length > 0;
+    keyConfigured &&
+    topic.trim().length > 0 &&
+    defender.trim().length > 0 &&
+    opposer.trim().length > 0;
 
   return (
     <form
@@ -36,6 +40,13 @@ export function DebateSetup({ models, modelListFailed, onStart }: DebateSetupPro
         });
       }}
     >
+      {!keyConfigured ? (
+        <p className="notice">
+          OPENROUTER_API_KEY is not set. Add it to <code>.env.local</code> and restart the dev
+          server, then reload this page.
+        </p>
+      ) : null}
+
       {modelListFailed ? (
         <p className="hint">
           Couldn’t load the OpenRouter model list — type model ids by hand in the fields below.

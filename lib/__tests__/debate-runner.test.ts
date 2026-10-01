@@ -109,6 +109,40 @@ describe('runDebate', () => {
     ).toBe(true);
   });
 
+  it('resumes from previously completed turns', async () => {
+    const calls: string[] = [];
+    const streamTurn: StreamTurnFn = (modelId) =>
+      (async function* generate() {
+        calls.push(modelId);
+        yield 'more';
+      })();
+
+    const events: StreamEvent[] = [];
+    const prior = [
+      { index: 0, round: 1, side: 'defender' as const, modelId: 'defender/model', text: 'opening' },
+    ];
+
+    const turns = await runDebate(
+      config,
+      (event) => {
+        events.push(event);
+      },
+      streamTurn,
+      prior,
+    );
+
+    // Two rounds = four turns; one was already done, so three more are streamed.
+    expect(turns).toHaveLength(4);
+    expect(turns[0].text).toBe('opening');
+    expect(events[0]).toEqual({
+      type: 'turn-start',
+      side: 'opposer',
+      round: 1,
+      modelId: 'opposer/model',
+    });
+    expect(calls).toEqual(['opposer/model', 'defender/model', 'opposer/model']);
+  });
+
   it('emits a tagged error and rethrows when a turn fails mid-debate', async () => {
     const streamTurn: StreamTurnFn = (modelId) =>
       (async function* generate() {

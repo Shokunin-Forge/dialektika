@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildJudgePrompt, judgementSchema, toVerdict, type Judgement } from '../judge';
+import { buildJudgePrompt, judgementSchema, plainTextVerdict, toVerdict, type Judgement } from '../judge';
 import type { DebateConfig, Turn } from '../types';
 
 const config: DebateConfig = {
@@ -55,6 +55,7 @@ describe('toVerdict', () => {
     const verdict = toVerdict(judgement());
     expect(verdict.strongerSide).toBe('defender');
     expect(verdict.tieBreakApplied).toBe(false);
+    expect(verdict.plainText).toBe(false);
   });
 
   it('awards a level debate to the opposition (burden of proof)', () => {
@@ -67,5 +68,16 @@ describe('toVerdict', () => {
     );
     expect(verdict.strongerSide).toBe('opposer');
     expect(verdict.tieBreakApplied).toBe(true);
+  });
+});
+
+describe('plainTextVerdict', () => {
+  it('is a labelled fallback with no scores or named side', () => {
+    const verdict = plainTextVerdict('Jev could not score this debate.');
+    expect(verdict.plainText).toBe(true);
+    expect(verdict.scores).toBeNull();
+    expect(verdict.strongerSide).toBeNull();
+    expect(verdict.decisiveTurns).toEqual([]);
+    expect(verdict.crystallization).toBe('Jev could not score this debate.');
   });
 });

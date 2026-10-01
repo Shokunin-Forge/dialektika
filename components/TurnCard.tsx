@@ -5,7 +5,7 @@ const ROLE_LABEL: Record<Side, string> = {
   opposer: 'Opposition',
 };
 
-export function TurnCard({ turn }: { turn: ArenaTurn }) {
+export function TurnCard({ turn, onRetry }: { turn: ArenaTurn; onRetry?: () => void }) {
   return (
     <article className={`turn ${turn.side}${turn.status === 'error' ? ' error' : ''}`}>
       <header className="turn-label">
@@ -20,7 +20,14 @@ export function TurnCard({ turn }: { turn: ArenaTurn }) {
       </header>
 
       {turn.status === 'error' ? (
-        <p className="turn-error">{turn.error ?? 'This turn failed.'}</p>
+        <div className="turn-error-block">
+          <p className="turn-error">{turn.error ?? 'This turn failed.'}</p>
+          {onRetry ? (
+            <button className="btn btn-ghost" type="button" onClick={onRetry}>
+              Retry
+            </button>
+          ) : null}
+        </div>
       ) : turn.text ? (
         <div className="turn-text">{turn.text}</div>
       ) : (

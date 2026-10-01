@@ -448,6 +448,19 @@ a {
   width: auto;
 }
 
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.turn-error-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 @media (max-width: 780px) {
   .grid-2,
   .arena-headers,

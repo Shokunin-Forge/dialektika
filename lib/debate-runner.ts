@@ -14,8 +14,9 @@ export async function runDebate(
   config: DebateConfig,
   emit: EmitFn,
   streamTurn: StreamTurnFn = streamTurnText,
+  initialTurns: Turn[] = [],
 ): Promise<Turn[]> {
-  const turns: Turn[] = [];
+  const turns: Turn[] = [...initialTurns];
   let next = nextSpeaker(config, turns);
 
   while (next) {
