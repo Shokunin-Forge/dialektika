@@ -76,6 +76,8 @@ Build mode: fast
 
 ## Final Review
 
+- [ ] Model picker rebuilt as a dropdown: shows the full model list with an in-panel search box, and a clear loading state before the list arrives (was an empty input that read as broken) — learner confirms on retry
+
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

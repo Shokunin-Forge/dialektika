@@ -6,12 +6,19 @@ import { ModelPicker } from './ModelPicker';
 
 interface DebateSetupProps {
   models: ModelOption[];
+  modelsLoading: boolean;
   modelListFailed: boolean;
   keyConfigured: boolean;
   onStart: (config: Omit<DebateConfig, 'id'>) => void;
 }
 
-export function DebateSetup({ models, modelListFailed, keyConfigured, onStart }: DebateSetupProps) {
+export function DebateSetup({
+  models,
+  modelsLoading,
+  modelListFailed,
+  keyConfigured,
+  onStart,
+}: DebateSetupProps) {
   const [topic, setTopic] = useState('');
   const [defender, setDefender] = useState('');
   const [opposer, setOpposer] = useState('');
@@ -70,6 +77,7 @@ export function DebateSetup({ models, modelListFailed, keyConfigured, onStart }:
           label="Defender · Proposition"
           value={defender}
           models={models}
+          loading={modelsLoading}
           onChange={setDefender}
         />
         <ModelPicker
@@ -77,6 +85,7 @@ export function DebateSetup({ models, modelListFailed, keyConfigured, onStart }:
           label="Opposer · Opposition"
           value={opposer}
           models={models}
+          loading={modelsLoading}
           onChange={setOpposer}
         />
       </div>

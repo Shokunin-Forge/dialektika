@@ -14,6 +14,7 @@ export default function SetupPage() {
   const [debates, setDebates] = useState<Debate[]>([]);
   const [modelListFailed, setModelListFailed] = useState(false);
   const [keyConfigured, setKeyConfigured] = useState(true);
+  const [modelsLoading, setModelsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +53,10 @@ export default function SetupPage() {
         if (cached.length === 0 && !cancelled) {
           setModelListFailed(true);
         }
+      } finally {
+        if (!cancelled) {
+          setModelsLoading(false);
+        }
       }
     }
 
@@ -79,6 +84,7 @@ export default function SetupPage() {
       </p>
       <DebateSetup
         models={models}
+        modelsLoading={modelsLoading}
         modelListFailed={modelListFailed}
         keyConfigured={keyConfigured}
         onStart={handleStart}
