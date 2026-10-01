@@ -509,6 +509,16 @@ a {
   color: var(--muted);
 }
 
+.history-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.history-row .history-item {
+  flex: 1;
+}
+
 .readonly-note {
   margin: 0 0 18px;
   font-size: 13px;

@@ -59,7 +59,7 @@ Build mode: fast
   Learner check: Run a debate, then find it in the history list on the setup screen and open it to re-read the whole exchange.
   Commit: `Save debates and add history re-read`
 
-- [ ] **6. Download a debate as .docx**
+- [x] **6. Download a debate as .docx**
   Becomes usable: Any saved debate can be downloaded as a `.docx` and opened in Word or Google Docs.
   Why now: The debate record is stored and proven, so the export is a pure read of settled data — the last piece of the core journey, with no open dependencies.
   PRD ref: `prd.md > Features and Behavior > History and export`

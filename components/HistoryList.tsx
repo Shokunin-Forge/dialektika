@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { downloadDebateDocx } from '@/lib/export-docx';
 import type { Debate } from '@/lib/types';
 
 export function HistoryList({ debates }: { debates: Debate[] }) {
@@ -13,7 +14,7 @@ export function HistoryList({ debates }: { debates: Debate[] }) {
       <h2 className="history-title">History</h2>
       <ul className="history-list">
         {debates.map((debate) => (
-          <li key={debate.id}>
+          <li className="history-row" key={debate.id}>
             <Link className="history-item" href={`/debate/${debate.id}`}>
               <span className="history-topic">{debate.topic}</span>
               <span className="history-meta">
@@ -21,6 +22,15 @@ export function HistoryList({ debates }: { debates: Debate[] }) {
                 {debate.jevEnabled ? ' · Jev' : ' · no Jev'}
               </span>
             </Link>
+            <button
+              className="btn btn-ghost"
+              type="button"
+              onClick={() => {
+                void downloadDebateDocx(debate).catch(() => undefined);
+              }}
+            >
+              Download .docx
+            </button>
           </li>
         ))}
       </ul>
