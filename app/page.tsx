@@ -3,12 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DebateSetup } from '@/components/DebateSetup';
+import { HistoryList } from '@/components/HistoryList';
 import { loadModelsCache, saveModelsCache } from '@/lib/model-cache';
-import type { DebateConfig, ModelOption } from '@/lib/types';
+import { loadDebates } from '@/lib/storage';
+import type { Debate, DebateConfig, ModelOption } from '@/lib/types';
 
 export default function SetupPage() {
   const router = useRouter();
   const [models, setModels] = useState<ModelOption[]>([]);
+  const [debates, setDebates] = useState<Debate[]>([]);
   const [modelListFailed, setModelListFailed] = useState(false);
   const [keyConfigured, setKeyConfigured] = useState(true);
 
@@ -16,6 +19,10 @@ export default function SetupPage() {
     let cancelled = false;
 
     async function load() {
+      if (!cancelled) {
+        setDebates(loadDebates());
+      }
+
       const cached = loadModelsCache();
       if (cached.length > 0 && !cancelled) {
         setModels(cached);
@@ -76,6 +83,7 @@ export default function SetupPage() {
         keyConfigured={keyConfigured}
         onStart={handleStart}
       />
+      <HistoryList debates={debates} />
     </main>
   );
 }

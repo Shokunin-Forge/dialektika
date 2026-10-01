@@ -49,7 +49,7 @@ Build mode: fast
   Learner check: Force a failure — remove the key, then run a debate with a bad model id — and confirm you get a clear error and, mid-debate, a Retry that picks the run back up.
   Commit: `Handle API key and mid-debate failures`
 
-- [ ] **5. Revisit a past debate**
+- [x] **5. Revisit a past debate**
   Becomes usable: Every completed debate is saved in the browser and listed on the setup screen; opening one re-reads the full debate in the arena, read-only.
   Why now: Only now is there a finished, correct debate worth persisting, so the storage shape is settled rather than speculative.
   PRD ref: `prd.md > Features and Behavior > History and export` (save + re-open), `prd.md > States and Boundaries` (persistence, always start empty)

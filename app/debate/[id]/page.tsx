@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Arena } from '@/components/Arena';
+import { getDebate, saveDebate } from '@/lib/storage';
 import { parseEvent, type StreamEvent } from '@/lib/stream-protocol';
 import type { ArenaTurn, DebateConfig, Side, Turn, Verdict } from '@/lib/types';
 
@@ -16,8 +17,13 @@ export default function DebatePage() {
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
   const [attempt, setAttempt] = useState(0);
+
+  const turnsRef = useRef<ArenaTurn[]>([]);
+  const verdictRef = useRef<Verdict | null>(null);
   const priorTurnsRef = useRef<Turn[]>([]);
+  const doneRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -27,12 +33,19 @@ export default function DebatePage() {
 
     const controller = new AbortController();
 
+    function commitTurns(updater: (previous: ArenaTurn[]) => ArenaTurn[]) {
+      turnsRef.current = updater(turnsRef.current);
+      setTurns(turnsRef.current);
+    }
+
     function handleEvent(event: StreamEvent) {
       switch (event.type) {
         case 'done':
+          doneRef.current = true;
           setFinished(true);
           break;
         case 'verdict':
+          verdictRef.current = event.verdict;
           setVerdict(event.verdict);
           break;
         case 'error': {
@@ -40,16 +53,35 @@ export default function DebatePage() {
           if (side === undefined) {
             setFatal(message);
           } else {
-            setTurns((previous) => markTurnError(previous, side, round ?? 0, message));
+            commitTurns((previous) => markTurnError(previous, side, round ?? 0, message));
           }
           break;
         }
         default:
-          setTurns((previous) => reduceTurn(previous, event));
+          commitTurns((previous) => reduceTurn(previous, event));
       }
     }
 
     async function run() {
+      const saved = getDebate(id);
+      if (saved) {
+        const savedTurns: ArenaTurn[] = saved.turns.map((turn) => ({ ...turn, status: 'done' }));
+        turnsRef.current = savedTurns;
+        verdictRef.current = saved.verdict;
+        setConfig({
+          id: saved.id,
+          topic: saved.topic,
+          rounds: saved.rounds,
+          jevEnabled: saved.jevEnabled,
+          sides: saved.sides,
+        });
+        setTurns(savedTurns);
+        setVerdict(saved.verdict);
+        setReadOnly(true);
+        setFinished(true);
+        return;
+      }
+
       const raw = sessionStorage.getItem(`dialektika.pending.${id}`);
       if (!raw) {
         setFatal('This debate is no longer available in this tab. Start a new one.');
@@ -104,6 +136,25 @@ export default function DebatePage() {
         if (last) {
           handleEvent(last);
         }
+
+        if (doneRef.current) {
+          saveDebate({
+            id: parsed.id,
+            topic: parsed.topic,
+            createdAt: new Date().toISOString(),
+            rounds: parsed.rounds,
+            jevEnabled: parsed.jevEnabled,
+            sides: parsed.sides,
+            turns: turnsRef.current.map((turn) => ({
+              index: turn.index,
+              round: turn.round,
+              side: turn.side,
+              modelId: turn.modelId,
+              text: turn.text,
+            })),
+            verdict: verdictRef.current,
+          });
+        }
       } catch (error) {
         if (!controller.signal.aborted) {
           setFatal(error instanceof Error ? error.message : String(error));
@@ -121,7 +172,7 @@ export default function DebatePage() {
   }, [turns]);
 
   function retry() {
-    priorTurnsRef.current = turns
+    priorTurnsRef.current = turnsRef.current
       .filter((turn) => turn.status === 'done')
       .map((turn) => ({
         index: turn.index,
@@ -130,8 +181,12 @@ export default function DebatePage() {
         modelId: turn.modelId,
         text: turn.text,
       }));
-    setTurns((previous) => previous.filter((turn) => turn.status !== 'error'));
+
+    const next = turnsRef.current.filter((turn) => turn.status !== 'error');
+    turnsRef.current = next;
+    setTurns(next);
     setVerdict(null);
+    verdictRef.current = null;
     setFinished(false);
     setFatal(null);
     setAttempt((value) => value + 1);
@@ -158,8 +213,17 @@ export default function DebatePage() {
           ? `${config.sides.defender} (defender) vs ${config.sides.opposer} (opposer) · ${config.rounds} rounds${finished ? ' · complete' : ''}`
           : 'Loading…'}
       </p>
+
+      {readOnly ? (
+        <>
+          <p className="readonly-note">
+            Saved debate — read-only. <Link href="/">Back to setup</Link>
+          </p>
+        </>
+      ) : null}
+
       {config ? (
-        <Arena config={config} turns={turns} verdict={verdict} onRetry={retry} />
+        <Arena config={config} turns={turns} verdict={verdict} onRetry={readOnly ? undefined : retry} />
       ) : null}
       <div ref={bottomRef} />
     </main>
