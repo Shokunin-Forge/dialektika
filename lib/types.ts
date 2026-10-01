@@ -1,5 +1,10 @@
 export type Side = 'defender' | 'opposer';
 
+export interface ModelOption {
+  id: string;
+  name: string;
+}
+
 export interface DebateConfig {
   id: string;
   topic: string;

@@ -9,7 +9,7 @@ Build mode: fast
 
 ## Slices
 
-- [ ] **1. Two models debate live in one arena**
+- [x] **1. Two models debate live in one arena**
   Becomes usable: A running app where you enter a topic and two model ids, press Start, and watch the defender open and the opposer rebut it live, turn by turn, in a two-column arena.
   Why now: This is the unique kernel — the referee loop that runs the models one after another and merges their turns into one stream. It carries bootstrapping (scaffold, deps, config), so it proves the whole path end to end and retires the spec's one unfamiliar risk: merging sequentially streamed turns into a single ordered browser stream.
   PRD ref: `prd.md > The Core Journey` (steps 1-8), `prd.md > Features and Behavior > The debate`
@@ -71,7 +71,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after the live debate kernel (slice 1): does the two-column streaming debate feel right, and does it change what you want from the rest?
+- [x] Early usable behavior explored — after the live debate kernel (slice 1): does the two-column streaming debate feel right, and does it change what you want from the rest?
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -91,3 +91,5 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- Split the debate system prompt out of `messages` into the AI SDK's `instructions` option, and surfaced model failures from `fullStream` — the build discovered that AI SDK v7 rejects a `system` message inside `messages`, and that consuming `textStream` silently swallows provider errors, so a failed turn looked like a successful empty turn.
