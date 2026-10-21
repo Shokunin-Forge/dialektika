@@ -23,13 +23,18 @@ export function HistoryList({ debates }: { debates: Debate[] }) {
               </span>
             </Link>
             <button
-              className="btn btn-ghost"
+              className="btn btn-ghost download-btn"
               type="button"
+              aria-label="Download .docx"
               onClick={() => {
                 void downloadDebateDocx(debate).catch(() => undefined);
               }}
             >
-              Download .docx
+              <svg className="download-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 2.25 V9.25 M4.75 6.25 L8 9.5 L11.25 6.25 M3.25 12.75 H12.75" />
+              </svg>
+              <span className="download-label">Download .docx</span>
+              <span className="download-ext">.docx</span>
             </button>
           </li>
         ))}

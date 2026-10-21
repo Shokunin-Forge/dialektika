@@ -19,12 +19,13 @@ export default function DebatePage() {
   const [finished, setFinished] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [stuck, setStuck] = useState(false);
 
   const turnsRef = useRef<ArenaTurn[]>([]);
   const verdictRef = useRef<Verdict | null>(null);
   const priorTurnsRef = useRef<Turn[]>([]);
   const doneRef = useRef(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const stickyRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!id) {
@@ -168,8 +169,40 @@ export default function DebatePage() {
   }, [id, attempt]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [turns]);
+    const element = stickyRef.current;
+    if (!element) {
+      return;
+    }
+
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const node = stickyRef.current;
+      if (!node) {
+        return;
+      }
+      setStuck(node.getBoundingClientRect().top <= 0.5);
+    }
+
+    function schedule() {
+      if (frame) {
+        return;
+      }
+      frame = requestAnimationFrame(update);
+    }
+
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) {
+        cancelAnimationFrame(frame);
+      }
+    };
+  }, []);
 
   function retry() {
     priorTurnsRef.current = turnsRef.current
@@ -207,25 +240,44 @@ export default function DebatePage() {
   return (
     <main className="shell">
       <p className="brand">Dialektika · arena</p>
-      <h1 className="title">{config?.topic ?? 'Debate'}</h1>
-      <p className="subtitle">
-        {config
-          ? `${config.sides.defender} (defender) vs ${config.sides.opposer} (opposer) · ${config.rounds} rounds${finished ? ' · complete' : ''}`
-          : 'Loading…'}
-      </p>
 
       {readOnly ? (
-        <>
-          <p className="readonly-note">
-            Saved debate — read-only. <Link href="/">Back to setup</Link>
-          </p>
-        </>
+        <div className="readonly-note">
+          <Link className="readonly-link" href="/">
+            <svg className="readonly-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M9.5 3.75 L5.25 8 L9.5 12.25" />
+            </svg>
+            Back
+          </Link>
+          <span className="readonly-tag">
+            <svg className="readonly-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="3.25" y="7" width="9.5" height="6.25" rx="1.5" />
+              <path d="M5.25 7 V5.25 A2.75 2.75 0 0 1 10.75 5.25 V7" />
+            </svg>
+            Saved debate — read-only
+          </span>
+        </div>
       ) : null}
+
+      <div ref={stickyRef} className={`debate-sticky${stuck ? ' is-stuck' : ''}`}>
+        <h1 className="title">{config?.topic ?? 'Debate'}</h1>
+        <p className="subtitle">
+          {config ? (
+            <>
+              <span className="model-defender">{config.sides.defender}</span> (defender) vs{' '}
+              <span className="model-opposer">{config.sides.opposer}</span> (opposer) ·{' '}
+              {config.rounds} rounds
+              {finished ? ' · complete' : ''}
+            </>
+          ) : (
+            'Loading…'
+          )}
+        </p>
+      </div>
 
       {config ? (
         <Arena config={config} turns={turns} verdict={verdict} onRetry={readOnly ? undefined : retry} />
       ) : null}
-      <div ref={bottomRef} />
     </main>
   );
 }

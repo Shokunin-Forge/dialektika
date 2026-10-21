@@ -12,75 +12,87 @@ const AXIS_LABEL: Record<keyof AxisScores, string> = {
   burdenOfProof: 'Burden of proof',
 };
 
+const BODY_SPACING = { after: 180, line: 276 };
+const HEADING_SPACING = { before: 280, after: 140 };
+
+type Heading = (typeof HeadingLevel)[keyof typeof HeadingLevel];
+
+function body(text: string): Paragraph {
+  return new Paragraph({ text, spacing: BODY_SPACING });
+}
+
+function heading(text: string, level: Heading): Paragraph {
+  return new Paragraph({ text, heading: level, spacing: HEADING_SPACING, keepNext: true });
+}
+
 export function buildDebateDocument(debate: Debate): Document {
   const children: Paragraph[] = [
-    new Paragraph({ text: debate.topic, heading: HeadingLevel.TITLE }),
+    new Paragraph({
+      text: debate.topic,
+      heading: HeadingLevel.TITLE,
+      spacing: { after: 200 },
+      keepNext: true,
+    }),
     new Paragraph({
       children: [
         new TextRun({ text: `Proposition (defender): ${debate.sides.defender}` }),
-        new TextRun({ text: `\nOpposition (opposer): ${debate.sides.opposer}` }),
+        new TextRun({ text: `Opposition (opposer): ${debate.sides.opposer}`, break: 1 }),
         new TextRun({
-          text: `\n${debate.rounds} ${debate.rounds === 1 ? 'round' : 'rounds'} · Jev ${
+          text: `${debate.rounds} ${debate.rounds === 1 ? 'round' : 'rounds'} · Jev ${
             debate.jevEnabled ? 'on' : 'off'
           }`,
           break: 1,
         }),
       ],
+      spacing: { after: 120, line: 276 },
     }),
   ];
 
   for (const turn of debate.turns) {
     children.push(
-      new Paragraph({
-        text: `Round ${turn.round} — ${SIDE_LABEL[turn.side]} (${turn.modelId})`,
-        heading: HeadingLevel.HEADING_2,
-      }),
+      heading(`Round ${turn.round} — ${SIDE_LABEL[turn.side]} (${turn.modelId})`, HeadingLevel.HEADING_2),
     );
     for (const block of turn.text.split(/\n+/)) {
       if (block.trim()) {
-        children.push(new Paragraph({ text: block }));
+        children.push(body(block));
       }
     }
   }
 
   if (debate.verdict) {
-    children.push(new Paragraph({ text: 'Jev’s verdict', heading: HeadingLevel.HEADING_1 }));
+    children.push(heading('Jev’s verdict', HeadingLevel.HEADING_1));
     const verdict = debate.verdict;
 
     if (verdict.plainText || !verdict.scores) {
-      children.push(new Paragraph({ text: verdict.crystallization }));
+      children.push(body(verdict.crystallization));
     } else {
       children.push(
-        new Paragraph({
-          text: `Stronger side: ${
+        body(
+          `Stronger side: ${
             verdict.strongerSide === 'defender' ? 'Proposition (defender)' : 'Opposition (opposer)'
           }`,
-        }),
+        ),
       );
 
       for (const axis of Object.keys(AXIS_LABEL) as (keyof AxisScores)[]) {
         children.push(
-          new Paragraph({
-            text: `${AXIS_LABEL[axis]}: defender ${verdict.scores.defender[axis]} · opposer ${verdict.scores.opposer[axis]}`,
-          }),
+          body(
+            `${AXIS_LABEL[axis]}: defender ${verdict.scores.defender[axis]} · opposer ${verdict.scores.opposer[axis]}`,
+          ),
         );
       }
 
       if (verdict.tieBreakApplied) {
         children.push(
-          new Paragraph({
-            text: 'Scores were level, so the tie went to the opposition (burden of proof).',
-          }),
+          body('Scores were level, so the tie went to the opposition (burden of proof).'),
         );
       }
 
       if (verdict.decisiveTurns.length > 0) {
-        children.push(
-          new Paragraph({ text: `Decisive turns: ${verdict.decisiveTurns.join(', ')}` }),
-        );
+        children.push(body(`Decisive turns: ${verdict.decisiveTurns.join(', ')}`));
       }
 
-      children.push(new Paragraph({ text: verdict.crystallization }));
+      children.push(body(verdict.crystallization));
     }
   }
 

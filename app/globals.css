@@ -63,6 +63,39 @@ a {
   color: var(--muted);
 }
 
+.subtitle .model-defender {
+  font-weight: 600;
+  color: var(--defender);
+}
+
+.subtitle .model-opposer {
+  font-weight: 600;
+  color: var(--opposer);
+}
+
+.debate-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -24px 16px;
+  padding: 20px 24px 16px;
+  background: rgba(10, 12, 17, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent;
+}
+
+.debate-sticky.is-stuck {
+  border-bottom-color: var(--border-soft);
+}
+
+.debate-sticky .title {
+  margin-top: 0;
+}
+
+.debate-sticky .subtitle {
+  margin-bottom: 0;
+}
+
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -108,6 +141,11 @@ a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
+  margin-bottom: 18px;
+}
+
+.grid-2 > .field {
+  margin-bottom: 0;
 }
 
 .row {
@@ -118,6 +156,10 @@ a {
 
 .rounds-field {
   width: 140px;
+}
+
+.row .start-debate {
+  margin-left: auto;
 }
 
 .btn {
@@ -493,24 +535,116 @@ a {
   font-size: 14px;
 }
 
+.checkbox-field {
+  margin-bottom: 0;
+}
+
+.row .field {
+  margin-bottom: 0;
+}
+
 .checkbox-field label {
+  display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
   text-transform: none;
   letter-spacing: normal;
   font-size: 14px;
   color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.checkbox-field:hover label {
+  border-color: #33405a;
 }
 
 .checkbox-field input {
-  width: auto;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: #0e1119;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.checkbox-box svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  fill: none;
+  stroke: #06101f;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: scale(0.55);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.checkbox-field input:checked + .checkbox-box {
+  border-color: var(--defender);
+  background: var(--defender);
+}
+
+.checkbox-field input:checked + .checkbox-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checkbox-field input:focus-visible + .checkbox-box {
+  outline: 2px solid var(--defender);
+  outline-offset: 2px;
+}
+
+.checkbox-text {
+  line-height: 1.25;
 }
 
 .btn-ghost {
   background: transparent;
   border-color: var(--border);
   color: var(--text);
+}
+
+.download-btn {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.download-ext {
+  display: none;
+}
+
+.download-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .turn-error-block {
@@ -579,9 +713,47 @@ a {
 }
 
 .readonly-note {
-  margin: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
   font-size: 13px;
   color: var(--muted);
+}
+
+.readonly-icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.readonly-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--defender);
+}
+
+.readonly-link:hover {
+  color: #7aa9ff;
+}
+
+.readonly-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 @media (max-width: 780px) {
@@ -589,5 +761,41 @@ a {
   .arena-headers,
   .arena-grid {
     grid-template-columns: 1fr;
+  }
+
+  .debate-sticky .title {
+    font-size: 26px;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .row .rounds-field,
+  .row .checkbox-field,
+  .row .start-debate {
+    width: 100%;
+  }
+
+  .row .start-debate {
+    margin-left: 0;
+  }
+
+  .download-label {
+    display: none;
+  }
+
+  .download-btn {
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 12px;
+  }
+
+  .download-ext {
+    display: block;
+    font-size: 11px;
+    line-height: 1;
   }
 }

@@ -110,10 +110,15 @@ export function DebateSetup({
               checked={jevEnabled}
               onChange={(event) => setJevEnabled(event.target.checked)}
             />
-            <span>Jev judges the debate</span>
+            <span className="checkbox-box" aria-hidden="true">
+              <svg viewBox="0 0 16 16">
+                <path d="M3.5 8.5 L6.5 11.5 L12.5 4.5" />
+              </svg>
+            </span>
+            <span className="checkbox-text">Jev judges the debate</span>
           </label>
         </div>
-        <button className="btn" type="submit" disabled={!ready}>
+        <button className="btn start-debate" type="submit" disabled={!ready}>
           Start debate
         </button>
       </div>
