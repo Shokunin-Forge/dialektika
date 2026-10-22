@@ -1,6 +1,11 @@
 # Personal learning context (kept out of commits by default)
 /devpost/learner-profile.md
 
+# Personal drafts / scratch notes (kept out of commits by default)
+/devpost/submission.md
+/devpost/drafts/
+/devpost/*.draft.md
+
 # Local credentials
 .env
 .env.*
